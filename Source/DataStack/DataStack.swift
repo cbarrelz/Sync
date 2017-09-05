@@ -292,22 +292,26 @@ import CoreData
     public func drop(completion: ((_ error: NSError?) -> Void)? = nil) {
         self.writerContext.performAndWait {
             self.writerContext.reset()
-
+            
             self.mainContext.performAndWait {
                 self.mainContext.reset()
-
+                
                 self.persistentStoreCoordinator.performAndWait {
                     for store in self.persistentStoreCoordinator.persistentStores {
                         guard let storeURL = store.url else { continue }
-
+                        
                         do {
                             if #available(iOS 9, OSX 10.11, tvOS 9, watchOS 2, *) {
                                 try self.persistentStoreCoordinator.destroyPersistentStore(at: storeURL, ofType: self.storeType.type, options: store.options)
-                                try! self.persistentStoreCoordinator.addPersistentStore(storeType: self.storeType, bundle: self.modelBundle, modelName: self.modelName, storeName: self.storeName, containerURL: self.containerURL)
                             } else {
                                 try! self.oldDrop(storeURL: storeURL)
                             }
-
+                        } catch let error as NSError {
+                            
+                        }
+                        do {
+                            try self.persistentStoreCoordinator.addPersistentStore(storeType: self.storeType, bundle: self.modelBundle, modelName: self.modelName, storeName: self.storeName, containerURL: self.containerURL)
+                            
                             DispatchQueue.main.async {
                                 completion?(nil)
                             }
